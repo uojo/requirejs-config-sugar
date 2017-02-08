@@ -1,0 +1,29 @@
+{
+  "name": "requirejs-config-sugar",
+  "version": "0.0.2",
+  "description": "简化 requirejs 的配置",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "requirejs",
+    "config",
+    "javascript"
+  ],
+  "author": "uojo@dxy.cn",
+  "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    
+  },
+  "peerDependencies": {},
+  "dependencies": {
+    "requirejs": "2.3.2"
+  }
+}
