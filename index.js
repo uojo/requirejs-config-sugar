@@ -47,11 +47,16 @@ var cfg_default = {
 			
 		} else if ( /\.html$/.test(moduleName) ) {
 			// 视图模板
-			// console.log("视图模板", contents, "::");
-			var vname = (moduleName.match(/var\/([^\.]*)/))[1].replace(/\//g,"_");
-			contents = contents
-				.replace( /define\([\w\W]*?return/, "var " + vname + " =" )
-				.replace( rdefineEnd, "" );
+			debug && console.log("视图模板", moduleName, contents, "::");
+			var nameStr = moduleName.match(/var\/([^\.]*)/), vname;
+			if( nameStr && nameStr.length ){
+				vname = nameStr[1].replace(/\//g,"_");
+				contents = contents
+					.replace( /define\([\w\W]*?return/, "var " + vname + " =" )
+					.replace( rdefineEnd, "" );
+			}else{
+				console.log("error.请检查视图模板模块的路径> "+moduleName );
+			}
 			
 		} else {
 			// console.log(">3.....", moduleName, "::");
