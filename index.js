@@ -111,6 +111,7 @@ var pack = function(cfg,cb){
 		// console.log( "buildResponse >", contents.length );
 		
 		cb && cb();
+		console.log("complete >", buildResponse.split('\n')[1] );
 		
 		
 	}, function(err) {

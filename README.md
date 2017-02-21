@@ -44,6 +44,11 @@ require([*.html])
 
 	rjs_sugar.optimize("gf",cbfn);
 
+## changeLog
+
+### 0.0.3
+
+- 添加打包成功后的消息输出
 
 
 
