@@ -4,7 +4,7 @@ var requirejs = require('requirejs');
 var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
-
+var debug = 0;
 // 注意：baseUrl 路径是基于执行 node的目录的
 var cfg_default = {
 	name: 'entry',
@@ -47,15 +47,34 @@ var cfg_default = {
 			
 		} else if ( /\.html$/.test(moduleName) ) {
 			// 视图模板
-			debug && console.log("视图模板", moduleName, contents, "::");
-			var nameStr = moduleName.match(/var\/([^\.]*)/), vname;
-			if( nameStr && nameStr.length ){
-				vname = nameStr[1].replace(/\//g,"_");
+			var name_var_arr = moduleName.match(/var\/([^\.]*)/),
+				name_arr = moduleName.match(/!([^\.]*)/),
+				vname, vname_temp,
+				replaceBody;
+			
+			(name_var_arr && name_var_arr[1]) && (vname_temp = name_var_arr[1]);
+			!vname_temp && (name_arr && name_arr[1]) && (vname_temp = name_arr[1]);
+			
+			debug && console.log("视图模板", moduleName, "::", vname_temp);
+			
+			if( vname_temp ){
+				vname = vname_temp.replace(/\//g,"_");
+				
+				if( /^TPL/.test(vname) ){
+					fname = vname.replace(/^TPL_/,"");
+					replaceBody = "TPL." + fname + " =";
+				}else{
+					replaceBody = "var " + vname + " =";
+					
+				}
+				
 				contents = contents
-					.replace( /define\([\w\W]*?return/, "var " + vname + " =" )
-					.replace( rdefineEnd, "" );
+				.replace( /define\([\w\W]*?return/, replaceBody )
+				.replace( rdefineEnd, "" );
+				
 			}else{
 				console.log("error.请检查视图模板模块的路径> "+moduleName );
+				
 			}
 			
 		} else {
@@ -123,7 +142,7 @@ var pack = function(cfg,cb){
 
 var optimize = function(name, cb){
 	var cfg={};
-	console.log( "rjs-config-sugar > %s", name, ops_records );
+	// console.log( "rjs-config-sugar > %s", name, ops_records );
 	
 	if( !name )return;
 	
@@ -144,7 +163,7 @@ module.exports = {
 			Object.assign(cfg_default, ops.common);
 		}
 		
-		if( ops.data ){
+		if( ops.records ){
 			Object.assign(ops_records, ops.records);
 		}
 		

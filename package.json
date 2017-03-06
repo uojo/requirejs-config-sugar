@@ -1,9 +1,12 @@
 {
   "name": "requirejs-config-sugar",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "简化 requirejs 的配置",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node index.test.js -c all",
+    "watch": "node index.test.js -w all"
+  },
   "repository": {
     "type": "git",
     "url": ""
@@ -20,7 +23,8 @@
   },
   "homepage": "",
   "devDependencies": {
-    
+    "chokidar": "1.6.1",
+    "commander": "2.9.0"
   },
   "peerDependencies": {},
   "dependencies": {
