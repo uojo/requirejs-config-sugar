@@ -46,6 +46,11 @@ require([*.html])
 
 ## changeLog
 
+### 0.0.5
+
+- 修改 console.log 显示方式
+- 新增 require(TPL/xxx) 模板时，打包后的内容为 TPL.xxx = ...
+
 ### 0.0.4
 
 - 添加测试、使用实例
