@@ -2,8 +2,10 @@
 define([
 "core",
 "fn/name1",
+"var/fn1",
 "text!var/tpl/name2.html",
 "text!TPL/name3.html",
+"TPL/name4",
 
 ], function(Fn) {
 

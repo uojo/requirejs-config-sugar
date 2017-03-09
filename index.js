@@ -1,11 +1,69 @@
 var requirejs = require('requirejs');
+var Msg = require('./tools').msg;
 // var fs = require('fs');
 
 var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
-var debug = 0;
+
 // 注意：baseUrl 路径是基于执行 node的目录的
+
+function regTPLField(moduleName, contents ){
+	var name_var_arr = moduleName.match(/var\/([^\.]*)/),
+		name_arr, vname, vname_temp;
+	
+	Msg("0.",moduleName);
+	
+	if( name_var_arr && name_var_arr[1] ){
+		vname_temp = name_var_arr[1]
+		
+		Msg("1.",vname_temp)
+		
+	}else{
+	
+		if( /^text!/.test(moduleName) ){
+			vname_temp = /!([^\.]*)/.exec(moduleName)[1];
+		}else if( /TPL\//.test(moduleName) ){
+			vname_temp = /TPL\/([^\.]*)/.exec( moduleName )[1];
+		}
+		
+		Msg("2.",vname_temp)
+		
+	}
+
+	// return false;
+	
+	Msg("视图模板", moduleName, "::", vname_temp);
+	
+	
+	if( vname_temp ){
+		vname = vname_temp.replace(/\//g,"_");
+		
+		if( /TPL\//.test(moduleName) ){
+			
+			if( /^TPL_/.test(vname) ){
+				fname = vname.replace(/^TPL_/,"");
+			}else{
+				fname = vname_temp;
+			}
+			replaceBody = "TPL." + fname + " =";
+			
+		}else{
+			replaceBody = "var " + vname + " =";
+			
+		}
+		
+		contents = contents
+		.replace( /define\([\w\W]*?return/, replaceBody )
+		
+	}else{
+		
+		
+	}
+	
+	return contents;
+}
+
 var cfg_default = {
 	name: 'entry',
 	// optimize:"none",
@@ -19,8 +77,8 @@ var cfg_default = {
         end: "}());"
     },
 	onBuildWrite:function(moduleName, path, contents){
-		console.log(">", moduleName,"|", path, "...ok");
-		// console.log(process);
+		Msg(moduleName,"|", path, "...ok");
+		// Msg(process);
 		// return contents;
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
@@ -28,57 +86,37 @@ var cfg_default = {
 		// 
 		if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// console.log(">1.....", moduleName, "::");
+			// Msg(">1.....", moduleName, "::");
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "var " + ( /var\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( /.\/fn\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// console.log(">1.....", moduleName, "::");
+			// Msg(">1.....", moduleName, "::");
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "Fn." + ( /fn\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( moduleName=="text" ) {
 			// 文本模块
-			// console.log(">4.....", moduleName, "::");
+			// Msg(">4.....", moduleName, "::");
 			contents = "";
 			
-		} else if ( /\.html$/.test(moduleName) ) {
+		} else if ( /\.html$/.test(moduleName) || /.\/TPL\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 视图模板
-			var name_var_arr = moduleName.match(/var\/([^\.]*)/),
-				name_arr = moduleName.match(/!([^\.]*)/),
-				vname, vname_temp,
-				replaceBody;
 			
-			(name_var_arr && name_var_arr[1]) && (vname_temp = name_var_arr[1]);
-			!vname_temp && (name_arr && name_arr[1]) && (vname_temp = name_arr[1]);
+			contents = regTPLField( moduleName, contents );
 			
-			debug && console.log("视图模板", moduleName, "::", vname_temp);
-			
-			if( vname_temp ){
-				vname = vname_temp.replace(/\//g,"_");
-				
-				if( /^TPL/.test(vname) ){
-					fname = vname.replace(/^TPL_/,"");
-					replaceBody = "TPL." + fname + " =";
-				}else{
-					replaceBody = "var " + vname + " =";
-					
-				}
-				
-				contents = contents
-				.replace( /define\([\w\W]*?return/, replaceBody )
-				.replace( rdefineEnd, "" );
-				
+			if( contents!=false ){
+				contents = contents.replace( rdefineEnd, "" );
 			}else{
-				console.log("error.请检查视图模板模块的路径> "+moduleName );
-				
+				Msg("error.请检查视图模板模块的路径> "+moduleName );
 			}
 			
+			
 		} else {
-			// console.log(">3.....", moduleName, "::");
+			// Msg(">3.....", moduleName, "::");
 			contents = contents
 				.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
 
@@ -110,7 +148,7 @@ var cfg_default = {
 		}
 		*/
 		
-		// console.log(contents, "<.....");
+		// Msg(contents, "<.....");
 		
 		return contents;
 	}
@@ -124,17 +162,17 @@ var pack = function(cfg,cb){
 		//buildResponse is just a text output of the modules
 		//included. Load the built file for the contents.
 		//Use config.out to get the optimized file contents.
-		// console.log( "buildResponse" );
+		// Msg( "buildResponse" );
 		
 		// var contents = fs.readFileSync(config.out, 'utf8');
-		// console.log( "buildResponse >", contents.length );
+		// Msg( "buildResponse >", contents.length );
 		
 		cb && cb();
-		console.log("complete >", buildResponse.split('\n')[1] );
+		Msg("complete", buildResponse.split('\n')[1] );
 		
 		
 	}, function(err) {
-		console.log(err);
+		Msg(err);
 		//optimization err callback
 	});
 };
@@ -142,7 +180,7 @@ var pack = function(cfg,cb){
 
 var optimize = function(name, cb){
 	var cfg={};
-	// console.log( "rjs-config-sugar > %s", name, ops_records );
+	// Msg( "rjs-config-sugar > %s", name, ops_records );
 	
 	if( !name )return;
 	
@@ -152,7 +190,7 @@ var optimize = function(name, cb){
 		pack(tcfg, cb);
 		
 	}else{
-		console.log("error.requirejs-config-sugar：无 %s 配置记录", name );
+		Msg("error.requirejs-config-sugar：无 %s 配置记录", name );
 		
 	}
 };
@@ -167,11 +205,11 @@ module.exports = {
 			Object.assign(ops_records, ops.records);
 		}
 		
-		// console.log("config set complete", ops_records, cfg_default );
+		// Msg("config set complete", ops_records, cfg_default );
 		// return ;
 	},
 	"getConfig":function(){
-		console.log("config", ops_records, cfg_default );
+		Msg("config", ops_records, cfg_default );
 		return ;
 	},
 	"pack":pack,
