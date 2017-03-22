@@ -46,6 +46,10 @@ require([*.html])
 
 ## changeLog
 
+### 0.0.6
+
+- 修复当错误时不提示信息的问题
+
 ### 0.0.5
 
 - 修改 console.log 显示方式

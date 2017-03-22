@@ -172,7 +172,7 @@ var pack = function(cfg,cb){
 		
 		
 	}, function(err) {
-		Msg(err);
+		Msg('rjsOptimize.error',err);
 		//optimization err callback
 	});
 };

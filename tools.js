@@ -31,6 +31,10 @@ function msg(){
 			break;
 		}
 		
+		if( /error/.test(name) ){
+			show = 1;
+			content[0] = `${chalk.red(name)}`;
+		}
 		
 		show && console.log.apply(this,content);
 		
