@@ -25,6 +25,10 @@ function msg(){
 				content[0] = `${chalk.green(name)}`;
 			break;
 			
+			case "created":
+				content[0] = `${chalk.yellow(name)}`;
+			break;
+			
 			default:
 				show = 0;
 				content[0] = `${chalk.yellow(name)}`;

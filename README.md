@@ -45,6 +45,9 @@ require([*.html])
 	rjs_sugar.optimize("gf",cbfn);
 
 ## changeLog
+### 0.0.7
+
+- 新增方法 matchRecord ，用于匹配记录
 
 ### 0.0.6
 
