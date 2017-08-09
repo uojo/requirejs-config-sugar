@@ -2,13 +2,13 @@ var chalk = require('chalk')
 
 function msg(){
 	
-	var debug = 0, show=1;
+	var debug = 1, show=1;
 	var name =arguments[0],
 		content = Array.prototype.slice.call(arguments,0);
 		
 	// console.log(">",name,"<",content);
 		
-	if( 0 ){
+	if( debug ){
 		console.log( content.toString()+" >", content );
 		
 	}else{

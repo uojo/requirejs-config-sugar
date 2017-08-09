@@ -1,12 +1,15 @@
 /* 该模块仅用于打包，非引用模块（不能直接 require(['entry'])），仅使用打包后的文件 */
 define([
 "core",
+// "mods/umd",
+"umd",
+/*
 "fn/name1",
 "var/fn1",
 "text!var/tpl/name2.html",
 "text!TPL/name3.html",
 "TPL/name4",
-
+*/
 ], function(Fn) {
 
 

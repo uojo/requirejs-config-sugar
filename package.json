@@ -4,7 +4,8 @@
   "description": "简化 requirejs 的配置",
   "main": "index.js",
   "scripts": {
-    "start": "node index.test.js -c all",
+    "start": "cross-env LOG_LEVEL=debug nodemon index.test.js",
+    "build": "node index.test.js -c all",
     "watch": "node index.test.js -w all"
   },
   "repository": {
@@ -23,12 +24,15 @@
   },
   "homepage": "",
   "devDependencies": {
+    "chalk": "1.1.3",
     "chokidar": "1.6.1",
-    "commander": "2.9.0"
+    "colors": "1.1.2",
+    "commander": "2.9.0",
+    "cross-env": "5.0.5",
+    "nodemon": "1.11.0"
   },
   "peerDependencies": {},
   "dependencies": {
-    "chalk": "1.1.3",
     "requirejs": "2.3.2"
   }
 }

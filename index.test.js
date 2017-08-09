@@ -25,42 +25,37 @@ program
 .option('-w, --watch [name]', '监听目录变动并自动打包', "")
 .parse(process.argv);
 
-// 执行打包
-var vendor = function(name, cb){
-	if( rjs_ops.records[name] ){
-		rjs_sugar.optimize( name );
-		
-	}else{
-		console.log("error.请检查预定值", name );
+const handle= {
+	// 执行打包
+	vendor : function(name, cb){
+		if( rjs_ops.records[name] ){
+			rjs_sugar.optimize( name );
+			
+		}else{
+			console.log("error.请检查预定值", name );
+		}
+	},
+	vendorAll : function(){
+		for(var key in rjs_ops.records){
+			this.vendor(key);
+		}
 	}
 }
 
-var vendorAll = function(){
-	for(var key in rjs_ops.records){
-		vendor(key);
-	}
-}
 // 监听目录变动自动打包
 // console.log("program.watch", program.watch);
 if( program.watch ){
 	var chokidar = require('chokidar');
 	var cbfn_onchange = (event, path) => {
-		// console.log(event, path);
+		
 		if( event === "change"){
-			var packName;
-			if( /core\\gpp/.test(path) ){
-				console.log( "gpp" );
-			}
+			console.log(event, path );
+			// 自动匹配配置的记录，自动执行压缩
+			rjs_sugar.matchRecord(path,true)
 			
-			if( /core\\gf/.test(path) ){
-				console.log( "gf" );
-			}
-			
-			if(packName){
-				vendor( packName );
-			}
 		}
 	};
+	
 	var watchDirs = [];
 	for(var key in rjs_ops.records){
 		watchDirs.push( rjs_ops.records[key].baseUrl );
@@ -72,16 +67,15 @@ if( program.watch ){
 // console.log("program.create", program.create);
 if(program.create){
 	if( program.create=="all" ){
-		vendorAll();
+		handle.vendorAll();
 		
 	}else{
-		vendor(program.create);
+		handle.vendor(program.create);
 	}
 	
 }
 
-module.exports = {
-	// "pack":pack,
-	vendorAll,
-	vendor,
-};
+// 先执行一次
+handle.vendorAll();
+
+module.exports = handle;

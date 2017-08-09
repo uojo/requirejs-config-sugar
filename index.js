@@ -1,6 +1,6 @@
-var requirejs = require('requirejs');
-var Msg = require('./tools').msg;
-var Path = require("path");
+const requirejs = require('requirejs');
+const {clog,elog} = require('./log');
+const Path = require("path");
 // var fs = require('fs');
 
 var lock_pack = false;
@@ -22,14 +22,14 @@ function getPathStr(path){
 
 function regTPLField(moduleName, contents ){
 	var name_var_arr = moduleName.match(/var\/([^\.]*)/),
-		name_arr, vname, vname_temp;
+			name_arr, vname, vname_temp;
 	
-	Msg("0.",moduleName);
+	clog(moduleName);
 	
 	if( name_var_arr && name_var_arr[1] ){
 		vname_temp = name_var_arr[1]
 		
-		Msg("1.",vname_temp)
+		clog(vname_temp)
 		
 	}else{
 	
@@ -39,13 +39,13 @@ function regTPLField(moduleName, contents ){
 			vname_temp = /TPL\/([^\.]*)/.exec( moduleName )[1];
 		}
 		
-		Msg("2.",vname_temp)
+		clog(vname_temp)
 		
 	}
 
 	// return false;
 	
-	Msg("视图模板", moduleName, "::", vname_temp);
+	clog(moduleName, "::", vname_temp);
 	
 	
 	if( vname_temp ){
@@ -79,18 +79,18 @@ function regTPLField(moduleName, contents ){
 var cfg_default = {
 	name: 'entry',
 	// optimize:"none",
-    baseUrl: '',
-    out: '',
+	baseUrl: '',
+	out: '',
 	paths:{
 		// "jquery":"lib/jquery"
 	},
 	wrap: {
-        start: ";(function() {",
-        end: "}());"
-    },
+		start: ";(function() {",
+		end: "}());"
+	},
 	onBuildWrite:function(moduleName, path, contents){
-		Msg(moduleName,"|", path, "...ok");
-		// Msg(process);
+		clog(moduleName, path);
+		// clog(process);
 		// return contents;
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
@@ -98,21 +98,21 @@ var cfg_default = {
 		// 
 		if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// Msg(">1.....", moduleName, "::");
+			// clog(moduleName);
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "var " + ( /var\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( /.\/fn\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// Msg(">1.....", moduleName, "::");
+			// clog(moduleName);
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "Fn." + ( /fn\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( moduleName=="text" ) {
 			// 文本模块
-			// Msg(">4.....", moduleName, "::");
+			// clog(moduleName);
 			contents = "";
 			
 		} else if ( /\.html$/.test(moduleName) || /.\/TPL\//.test( path.replace( process.cwd(), "" ) ) ) {
@@ -123,12 +123,12 @@ var cfg_default = {
 			if( contents!=false ){
 				contents = contents.replace( rdefineEnd, "" );
 			}else{
-				Msg("error.请检查视图模板模块的路径> "+moduleName );
+				elog('red',"请检查视图模板模块的路径> "+moduleName );
 			}
 			
 			
 		} else {
-			// Msg(">3.....", moduleName, "::");
+			// clog(moduleName);
 			contents = contents
 				.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
 
@@ -160,7 +160,8 @@ var cfg_default = {
 		}
 		*/
 		
-		// Msg(contents, "<.....");
+		contents = `//${moduleName} \n ${contents} \n\n`
+		// clog(contents);
 		
 		return contents;
 	}
@@ -174,20 +175,20 @@ var pack = function(cfg,cb){
 		//buildResponse is just a text output of the modules
 		//included. Load the built file for the contents.
 		//Use config.out to get the optimized file contents.
-		// Msg( "buildResponse" );
+		// clog( "buildResponse" );
 		
 		// var contents = fs.readFileSync(config.out, 'utf8');
-		// Msg( "buildResponse >", contents.length );
+		// clog( "buildResponse >", contents.length );
 		
 		cb && cb();
-		Msg("created", buildResponse.split('\n')[1] );
+		elog('green', "created", buildResponse.split('\n')[1] );
 		/* setTimeout(()=>{
 			lock_pack = false;
 		},500) */
 		
 		
 	}, function(err) {
-		Msg('rjsOptimize.error',err);
+		elog('red','rjsOptimize.error',err);
 		//optimization err callback
 	})
 	
@@ -202,7 +203,7 @@ var optimize = function(name, cb){
 	lock_pack = true;
 	
 	var cfg={};
-	// Msg( "rjs-config-sugar > %s", name, ops_records );
+	// clog( "rjs-config-sugar > %s", name, ops_records );
 	
 	if( !name )return false;
 	
@@ -211,7 +212,7 @@ var optimize = function(name, cb){
 		pack(tcfg, cb);
 		
 	}else{
-		Msg("error.requirejs-config-sugar：无 %s 配置记录", name );
+		clog("error.requirejs-config-sugar：无 %s 配置记录", name );
 		return false;
 	}
 	
@@ -246,7 +247,7 @@ var matchRecord = function(path, pack, cb){
 		// 忽略打包文件
 		if( pathStr === getPathStr(packOps.out) ){
 			// console.log('忽略该文件')
-			Msg("complete", packOps.out );
+			clog("complete", packOps.out );
 			cb && cb();
 			lock_pack = false;
 			
@@ -257,7 +258,7 @@ var matchRecord = function(path, pack, cb){
 		
 	}else{
 		if( !lock_pack ){
-			console.log('未匹配到项目~')
+			elog('yellow','未匹配到项目~')
 			cb && cb();
 		}
 		
@@ -277,11 +278,11 @@ module.exports = {
 			Object.assign(ops_records, ops.records);
 		}
 		
-		// Msg("config set complete", ops_records, cfg_default );
+		// clog("config set complete", ops_records, cfg_default );
 		// return ;
 	},
 	"getConfig":function(){
-		Msg("config", ops_records, cfg_default );
+		clog(ops_records, cfg_default );
 		return ;
 	},
 	"pack":pack,
