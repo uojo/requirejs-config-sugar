@@ -34,6 +34,45 @@
  
 
 
+//fn/name1 
+ Fn.name1 = function (str) {
+		console.debug(123,str);
+	};
+
+ 
+
+
+//var/fn1 
+ var fn1 = function () {
+        // console.debug();
+    };
+
+ 
+
+
+//text 
+  
+
+;
+//text!var/tpl/name2.html 
+ 
+var tpl_name2 = '<div class="">\r\n\t<b>hello world</b>\r\n</div>'; 
+
+
+//text!TPL/name3.html 
+ 
+TPL.name3 = '<div class="">\r\n\t<b>hello world</b>\r\n</div>'; 
+
+
+//TPL/name4 
+ TPL.name4 = function () {
+		// 函数式的模板
+        // console.debug();
+    };
+
+ 
+
+
 //entry 
  /* 该模块仅用于打包，非引用模块（不能直接 require(['entry'])），仅使用打包后的文件 */
 

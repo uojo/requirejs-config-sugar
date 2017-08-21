@@ -3,16 +3,14 @@ define([
 "core",
 // "mods/umd",
 "umd",
-/*
+
 "fn/name1",
 "var/fn1",
 "text!var/tpl/name2.html",
 "text!TPL/name3.html",
 "TPL/name4",
-*/
+
 ], function(Fn) {
-
-
 
 /* 
 变量名称与路径对应：var/tpl/pagebean.html  ===> tpl_pagebean
