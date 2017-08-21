@@ -1,9 +1,9 @@
 const requirejs = require('requirejs');
-const {clog,elog} = require('./log');
+const {clog,elog,DelayExec} = require('uojo-kit');
 const Path = require("path");
 // var fs = require('fs');
 
-var lock_pack = false;
+var lock_pack = false, fireWall;
 var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
@@ -24,12 +24,12 @@ function regTPLField(moduleName, contents ){
 	var name_var_arr = moduleName.match(/var\/([^\.]*)/),
 			name_arr, vname, vname_temp;
 	
-	clog(moduleName);
+	elog(moduleName);
 	
 	if( name_var_arr && name_var_arr[1] ){
 		vname_temp = name_var_arr[1]
 		
-		clog(vname_temp)
+		elog(vname_temp)
 		
 	}else{
 	
@@ -39,13 +39,13 @@ function regTPLField(moduleName, contents ){
 			vname_temp = /TPL\/([^\.]*)/.exec( moduleName )[1];
 		}
 		
-		clog(vname_temp)
+		elog(vname_temp)
 		
 	}
 
 	// return false;
 	
-	clog(moduleName, "::", vname_temp);
+	elog(moduleName, "::", vname_temp);
 	
 	
 	if( vname_temp ){
@@ -78,7 +78,9 @@ function regTPLField(moduleName, contents ){
 
 var cfg_default = {
 	name: 'entry',
+	speedTaskEnter:0,
 	// optimize:"none",
+	async:true,
 	baseUrl: '',
 	out: '',
 	paths:{
@@ -89,8 +91,8 @@ var cfg_default = {
 		end: "}());"
 	},
 	onBuildWrite:function(moduleName, path, contents){
-		clog(moduleName, path);
-		// clog(process);
+		clog('gray',moduleName, path);
+		// elog(process);
 		// return contents;
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
@@ -98,21 +100,21 @@ var cfg_default = {
 		// 
 		if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// clog(moduleName);
+			// elog(moduleName);
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "var " + ( /var\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( /.\/fn\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
-			// clog(moduleName);
+			// elog(moduleName);
 			contents = contents
 				.replace( /define\([\w\W]*?return/, "Fn." + ( /fn\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
 				.replace( rdefineEnd, "" );
 
 		} else if ( moduleName=="text" ) {
 			// 文本模块
-			// clog(moduleName);
+			// elog(moduleName);
 			contents = "";
 			
 		} else if ( /\.html$/.test(moduleName) || /.\/TPL\//.test( path.replace( process.cwd(), "" ) ) ) {
@@ -123,12 +125,12 @@ var cfg_default = {
 			if( contents!=false ){
 				contents = contents.replace( rdefineEnd, "" );
 			}else{
-				elog('red',"请检查视图模板模块的路径> "+moduleName );
+				clog('red',"请检查视图模板模块的路径> "+moduleName );
 			}
 			
 			
 		} else {
-			// clog(moduleName);
+			// elog(moduleName);
 			contents = contents
 				.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
 
@@ -161,64 +163,84 @@ var cfg_default = {
 		*/
 		
 		contents = `//${moduleName} \n ${contents} \n\n`
-		// clog(contents);
+		// elog(contents);
 		
 		return contents;
 	}
 };
 
-var pack = function(cfg,cb){
+var optimize = function(cfg,cb){
+	if(cfg.constructor != Object){
+		clog('red',`打包配置错误：${cfg}`)
+	}
 	
 	var config = Object.assign({},cfg_default,cfg);
-	
+	// elog(cfg)
 	requirejs.optimize(config, function (buildResponse) {
 		//buildResponse is just a text output of the modules
 		//included. Load the built file for the contents.
 		//Use config.out to get the optimized file contents.
-		// clog( "buildResponse" );
+		// elog( "buildResponse" );
 		
 		// var contents = fs.readFileSync(config.out, 'utf8');
-		// clog( "buildResponse >", contents.length );
+		// elog( "buildResponse >", contents.length );
 		
-		cb && cb();
-		elog('green', "created", buildResponse.split('\n')[1] );
-		/* setTimeout(()=>{
-			lock_pack = false;
-		},500) */
+		clog('green', "created", buildResponse.split('\n')[1] );
+		lock_pack=false;
+		if(cb){
+			console.log("执行打包回调")
+			cb();
+		}
 		
 		
 	}, function(err) {
-		elog('red','rjsOptimize.error',err);
+		console.log('red','rjsOptimize.error',err);
+		lock_pack=false;
+		cb && cb();
 		//optimization err callback
 	})
 	
 };
 
-
-var optimize = function(name, cb){
-	if(lock_pack){
-		console.log('队列正在进行中');
-		return false;
+var pack = function(name, cb){
+	if(name.constructor != String){
+		clog('red',`执行的记录名称错误：${name}`)
 	}
-	lock_pack = true;
 	
-	var cfg={};
-	// clog( "rjs-config-sugar > %s", name, ops_records );
-	
-	if( !name )return false;
-	
-	if( Object.hasOwnProperty.call( ops_records, name) ){
-		var tcfg = ops_records[name];
-		pack(tcfg, cb);
-		
+	if( fireWall && !fireWall.hit(name) ){
+		clog('yellow',`任务进入队列间隔需大于 ${cfg_default.speedTaskEnter} 毫秒`)
+		return false;
 	}else{
-		clog("error.requirejs-config-sugar：无 %s 配置记录", name );
-		return false;
+		// if(1)return;
+		if(!cfg_default.async){
+			// 队列顺序执行
+			if(lock_pack){
+				console.log('队列正在进行中');
+				return false;
+			}
+			lock_pack = true;
+		}
+		// elog( name, ops_records );
+		
+		if( !name ) {
+			clog('red',`该记录无配置信息：${name}`)
+			return false;
+		}
+		
+		if( Object.hasOwnProperty.call( ops_records, name) ){
+			var tcfg = ops_records[name];
+			clog('green','任务开始执行 >',name)
+			optimize(tcfg, cb);
+			
+		}else{
+			clog('red',"配置项中，无该记录 >", name );
+			return false;
+		}
+		
 	}
-	
 };
 
-var matchRecord = function(path, pack, cb){
+var matchRecord = function(path, runPack, cb){
 	var packName, packOps,
 			pathDirStr = getPathStr( Path.dirname(path) ),
 			pathStr = getPathStr(path);
@@ -240,25 +262,28 @@ var matchRecord = function(path, pack, cb){
 		
 	}
 	
-	if( packOps && packName && pack ){
+	// console.log( 2, packOps, packName, pack )
+	clog('green', `匹配记录：${packName}` )
+	
+	if( packOps && packName && runPack ){
 		// console.log( "matchRecordName >", packName, packOps.out, lock_pack)
 		// console.log( "matchRecordName >", pathStr, getPathStr(packOps.out) )
 		
-		// 忽略打包文件
+		// 忽略输出的目标文件
 		if( pathStr === getPathStr(packOps.out) ){
 			// console.log('忽略该文件')
-			clog("complete", packOps.out );
+			clog('yellow', `忽略输出路径：${packOps.out}` );
 			cb && cb();
 			lock_pack = false;
 			
 		}else{
-			optimize( packName );
+			pack( packName );
 			
 		}
 		
 	}else{
 		if( !lock_pack ){
-			elog('yellow','未匹配到项目~')
+			clog('yellow','未匹配到项目~')
 			cb && cb();
 		}
 		
@@ -270,19 +295,26 @@ var matchRecord = function(path, pack, cb){
 
 module.exports = {
 	"config":function(ops){
+		// 全局参数配置
 		if( ops.common ){
 			Object.assign(cfg_default, ops.common);
 		}
+		// elog(cfg_default)
+		// 是否打开防火墙
+		if(cfg_default.speedTaskEnter){
+			fireWall = new DelayExec(cfg_default.speedTaskEnter)
+		}
 		
+		// 设置打包记录
 		if( ops.records ){
 			Object.assign(ops_records, ops.records);
 		}
-		
-		// clog("config set complete", ops_records, cfg_default );
+
+		// elog("config set complete", ops_records, cfg_default );
 		// return ;
 	},
 	"getConfig":function(){
-		clog(ops_records, cfg_default );
+		elog(ops_records, cfg_default );
 		return ;
 	},
 	"pack":pack,
