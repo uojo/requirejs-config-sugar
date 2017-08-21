@@ -76,9 +76,10 @@ function regTPLField(moduleName, contents ){
 	return contents;
 }
 
+
 var cfg_default = {
 	name: 'entry',
-	speedTaskEnter:0,
+	speedTaskEnter:0, //自定义参数，官方没有
 	// optimize:"none",
 	async:true,
 	baseUrl: '',

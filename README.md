@@ -1,6 +1,6 @@
 # requirejs-config-sugar
 
-> 简化使用 requirejs 打包时，引用模块文件前的处理操作，参考 jQuery 打包时的处理；
+> 作用：简化使用 requirejs 打包时，引用模块文件前的处理操作，参考 jQuery 打包时的处理，即项目会被打包成一个 UMD 的文件，供浏览器、Node 等场景下使用。
 
 ## Getting Started
 
@@ -12,39 +12,129 @@
 
 `var rjsCfg_sugar = require("requirejs-config-sugar");`
 
-## 技巧
+## 使用
 
-### 视图 *.html
-require([*.html])
+根据模块名称的编译，示例如下
+
+模块名称 | 模块内容 | 编译结果
+:---|:---|:---
+fn/name1 | function(){} | Fn.name = function(){}
+var/fn1 | function(){} | var fn1 = function(){}
+text!var/tpl/name2.html | html字符串... | var tpl_name2 = 'html字符串...'
+text!TPL/name3.html | html字符串... | TPL.name3 = 'html字符串...'
+TPL/name4 | function(){} | TPL.name4 = function(){}
+
+简要示例如下：
+
+```
+// entry.js
+define([
+"core",
+"fn/name1",
+"var/fn1",
+"text!var/tpl/name2.html",
+"text!TPL/name3.html",
+"TPL/name4",
+], function(Fn) {
+    Fn.xxx2 = tpl_name2;
+    
+    // 全局命名空间
+    var spaceName="TPL";
+    // console.log("main.complete");
+    if( window[spaceName] ){
+    	$.extend(window[spaceName],Fn);
+    }else{
+    	window[spaceName] = Fn;
+    }
+    
+    return Fn;
+
+});
+
+// core.js
+define([], function() {
+    var Fn = {
+    	fieldname1:1,
+    	fieldname2:function(){
+        
+    	}
+    };
+    return Fn;
+});
+
+```
+
+
+更多写法可以通过阅读项目示例体会 `test/app`
+
+> 其中 var、TPL、Fn ，目前均为保留字段名！
 
 ## 方法
 
 ### config(options)
-参数 `options` 为一个对象，字段包括 `common`：覆盖参数设置 、 `records`：带条记录参数设置。设置对象字段[参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js)
+建议配置至少一条记录，`options` 为对象，其中包含如下参数
+| 字段名称        | 作用           | 备注  |
+| :------------- |:-------------| :-----|
+| common | 通用参数设置 | 与 records 字段配置内容相同，只是在此配置后，在每一条记录都会生效 |
+| records | 每条记录参数设置 | 设置对象字段请 [参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js) |
+示例：
 
-    rjs_sugar.config({
-    	"common":{
-    		"name":"entry",
-    		"optimize":"none"
-    	},
-    	"records":{
-    		"recordsName1":{
-    			"baseUrl": 'dirname1/',
-    			"out": 'build/file1_build.js'
-    		},
-    		"recordsName2":{
-    			"baseUrl": 'dirname2/',
-    			"out": 'build/file2_build.js'
-    		},
-    	}
-    });
+```
+rjs_sugar.config({
+    "common":{
+        "name":"entry",
+        "optimize":"none",
+        // 自义定参数
+        "speedTaskEnter":0 // 任务进入执行队列中最小间隔时间 
+    },
+    "records":{
+        "recordsName1":{
+            "baseUrl": 'dirname1/',
+            "out": 'build/file1_build.js'
+        },
+        "recordsName2":{
+            "baseUrl": 'dirname2/',
+            "out": 'build/file2_build.js'
+        },
+    }
+});
+```
 
-### optimize(recordName, callback)
-执行打包操作，参数 `recordName`：config设置的记录名称，`callback`：打包执行后的对调函数
+### pack(recordname, callback)
+通过配置记录执行打包
+
+参数 | 作用
+:---|:---
+recordName | config设置的记录名称
+callback | 打包执行后的回调函数
+示例：
 
 	rjs_sugar.optimize("gf",cbfn);
 
+### optimize(config, callback)
+通过参入配置参数执行打包
+参数 | 作用
+:---|:---
+config | requirejs 打包配置，请 [参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js)
+callback | 打包执行后的回调函数
+示例：
+```
+rjs_sugar.optimize({
+    name: 'entry',
+    out: 'build.js'
+},cbfn);
+```
 ## changeLog
+### 0.1.2
+
+- 使用 uojo-kit 模块来替换 log，新增参数 speedTaskEnter
+- 互换 pack 与 optimize 的方法的使用
+
+### 0.1.1
+
+- 修复回调执行
+- 将队列顺序执行更改为队列异步执行
+
 ### 0.0.7
 
 - 新增方法 matchRecord ，用于匹配记录
