@@ -1,6 +1,6 @@
 {
   "name": "requirejs-config-sugar",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "简化 requirejs 的配置",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,6 @@
   "peerDependencies": {},
   "dependencies": {
     "requirejs": "2.3.2",
-    "uojo-kit": "0.1.0"
+    "uojo-kit": "0.1.2"
   }
 }

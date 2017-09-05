@@ -3,7 +3,7 @@ const {clog,elog,DelayExec} = require('uojo-kit');
 const Path = require("path");
 // var fs = require('fs');
 
-var lock_pack = false, fireWall;
+var lock_pack = false, fireWall, debug;
 var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
@@ -24,12 +24,12 @@ function regTPLField(moduleName, contents ){
 	var name_var_arr = moduleName.match(/var\/([^\.]*)/),
 			name_arr, vname, vname_temp;
 	
-	elog(moduleName);
+	// elog(moduleName);
 	
 	if( name_var_arr && name_var_arr[1] ){
 		vname_temp = name_var_arr[1]
 		
-		elog(vname_temp)
+		// elog(vname_temp)
 		
 	}else{
 	
@@ -39,14 +39,12 @@ function regTPLField(moduleName, contents ){
 			vname_temp = /TPL\/([^\.]*)/.exec( moduleName )[1];
 		}
 		
-		elog(vname_temp)
+		// elog(vname_temp)
 		
 	}
 
 	// return false;
-	
-	elog(moduleName, "::", vname_temp);
-	
+	// elog(moduleName, "::", vname_temp);
 	
 	if( vname_temp ){
 		vname = vname_temp.replace(/\//g,"_");
@@ -78,8 +76,11 @@ function regTPLField(moduleName, contents ){
 
 
 var cfg_default = {
+	//自定义参数，官方没有--start
+	speedTaskEnter:0, 
+	processSkipModules:[],
+	//--end
 	name: 'entry',
-	speedTaskEnter:0, //自定义参数，官方没有
 	// optimize:"none",
 	async:true,
 	baseUrl: '',
@@ -92,14 +93,17 @@ var cfg_default = {
 		end: "}());"
 	},
 	onBuildWrite:function(moduleName, path, contents){
-		clog('gray',moduleName, path);
+		// debug && clog('gray',moduleName, path);
 		// elog(process);
+		elog(this.out)
 		// return contents;
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
 		
 		// 
-		if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
+		if( this.processSkipModules.includes(moduleName) ){
+			
+		}else if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
 			// elog(moduleName);
 			contents = contents
@@ -171,12 +175,13 @@ var cfg_default = {
 };
 
 var optimize = function(cfg,cb){
+	// elog(cfg)
 	if(cfg.constructor != Object){
 		clog('red',`打包配置错误：${cfg}`)
 	}
 	
 	var config = Object.assign({},cfg_default,cfg);
-	// elog(cfg)
+	// elog(config)
 	requirejs.optimize(config, function (buildResponse) {
 		//buildResponse is just a text output of the modules
 		//included. Load the built file for the contents.
@@ -195,7 +200,7 @@ var optimize = function(cfg,cb){
 		
 		
 	}, function(err) {
-		console.log('red','rjsOptimize.error',err);
+		clog('red','rjsOptimize.error',err);
 		lock_pack=false;
 		cb && cb();
 		//optimization err callback
@@ -245,15 +250,17 @@ var matchRecord = function(path, runPack, cb){
 	var packName, packOps,
 			pathDirStr = getPathStr( Path.dirname(path) ),
 			pathStr = getPathStr(path);
-	// console.log( 1, path, pathStr );
+	// elog( path );
+	// elog( pathDirStr );
+	// elog( pathStr );
 	
 	// 匹配到哪一条打包记录
 	for(var k1 in ops_records){
 		var item = ops_records[k1],
-			item_path = item.baseUrl.replace( /\//g, "~");
+			item_path = getPathStr(item.baseUrl);
 			repx1 = new RegExp( item_path );
 		
-		// console.log( item_path, repx1.test( pathStr ), k1 );
+		// elog( item_path, repx1.test( pathStr ), pathDirStr, k1 );
 		
 		if( repx1.test( pathDirStr ) ){
 			packName = k1;
@@ -263,7 +270,7 @@ var matchRecord = function(path, runPack, cb){
 		
 	}
 	
-	// console.log( 2, packOps, packName, pack )
+	// console.log( 2, packOps, packName, runPack )
 	clog('green', `匹配记录：${packName}` )
 	
 	if( packOps && packName && runPack ){
@@ -296,6 +303,8 @@ var matchRecord = function(path, runPack, cb){
 
 module.exports = {
 	"config":function(ops){
+		// elog(ops.records.gpp.baseUrl)
+		debug = ops.debug
 		// 全局参数配置
 		if( ops.common ){
 			Object.assign(cfg_default, ops.common);
