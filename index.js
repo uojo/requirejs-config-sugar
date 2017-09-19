@@ -271,7 +271,9 @@ var matchRecord = function(path, runPack, cb){
 	}
 	
 	// console.log( 2, packOps, packName, runPack )
-	clog('green', `匹配记录：${packName}` )
+	if( packName ){
+		clog('green', `匹配记录：${packName}` )
+	}
 	
 	if( packOps && packName && runPack ){
 		// console.log( "matchRecordName >", packName, packOps.out, lock_pack)
@@ -281,7 +283,7 @@ var matchRecord = function(path, runPack, cb){
 		if( pathStr === getPathStr(packOps.out) ){
 			// console.log('忽略该文件')
 			clog('yellow', `忽略输出路径：${packOps.out}` );
-			cb && cb();
+			cb && cb(packName,packOps,true);
 			lock_pack = false;
 			
 		}else{
@@ -292,7 +294,7 @@ var matchRecord = function(path, runPack, cb){
 	}else{
 		if( !lock_pack ){
 			clog('yellow','未匹配到项目~')
-			cb && cb();
+			cb && cb(packName,packOps,false);
 		}
 		
 		

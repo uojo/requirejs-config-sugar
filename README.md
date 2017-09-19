@@ -64,7 +64,6 @@ define([], function() {
 
 ```
 
-
 更多写法可以通过阅读项目示例体会 `test/app`
 
 > 其中 var、TPL、Fn ，目前均为保留字段名！
@@ -112,7 +111,7 @@ callback | 打包执行后的回调函数
 	rjs_sugar.optimize("gf",cbfn);
 
 ### optimize(config, callback)
-通过参入配置参数执行打包
+通过传入配置参数执行打包
 参数 | 作用
 :---|:---
 config | requirejs 打包配置，请 [参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js)
@@ -124,7 +123,31 @@ rjs_sugar.optimize({
     out: 'build.js'
 },cbfn);
 ```
-## changeLog
+
+### matchRecord( path, runPack, callback)
+通过传入文件的绝对路径，获取匹配的配置记录。且可立即执行打包。
+参数 | 作用 | 默认值
+:---|:---|:---
+path | 文件的绝对路径，建议使用 path.resolve() | 
+runPack | 立即执行打包 | false
+callback | 打包执行后的回调函数 | 
+
+返回：匹配记录的名称
+
+示例：
+```
+var recordName = rjs_sugar.matchRecord( path.resolve('./dirname1/xxx.js'), true, function(name,options){
+    console.log(name); // recordsName1
+    console.log(options); // { "baseUrl":'dirname1/', "out":'build/file1_build.js' }
+} );
+console.log( recordName ); // recordsName1
+```
+
+## ChangeLog
+### 0.1.3
+
+- fix matchRecord 回调执行的bug
+
 ### 0.1.2
 
 - 使用 uojo-kit 模块来替换 log，新增参数 speedTaskEnter
