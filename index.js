@@ -74,12 +74,36 @@ function regTPLField(moduleName, contents ){
 	return contents;
 }
 
+function parseModuleName(dirs,moduleName){
+	elog(moduleName)
+	if(!dirs.length){
+		return false;
+	}
+	
+	moduleName = moduleName.replace(/^[^!]*!/,"").replace(/\.+.+$/,"");
+	if( /[^\w\d\/]+/.test(moduleName) || !/\//.test(moduleName) ){
+		return false;
+	}
+	
+	var ta = moduleName.split('/');
+	
+	if( !dirs.includes(ta[0]) ){
+		return null;
+	}
+		
+	return {
+		name:ta[0],
+		attr:ta.slice(1).join('_')
+	}
+}
 
 var cfg_default = {
 	//自定义参数，官方没有--start
 	speedTaskEnter:0, 
 	processSkipModules:[],
+	objectModuleDir:[],
 	//--end
+	
 	name: 'entry',
 	// optimize:"none",
 	async:true,
@@ -92,16 +116,23 @@ var cfg_default = {
 		start: ";(function() {",
 		end: "}());"
 	},
-	onBuildWrite:function(moduleName, path, contents){
-		// debug && clog('gray',moduleName, path);
+	_onBuildWrite:function(moduleName, path, contents, options){
+		debug && clog('red',moduleName, path);
 		// elog(process);
-		elog(this.out)
+		// elog(this.out)
 		// return contents;
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
 		
-		// 
+		var parseModuleNameRlt = parseModuleName(this.objectModuleDir,moduleName)
+		elog(parseModuleNameRlt)
+		
 		if( this.processSkipModules.includes(moduleName) ){
+			
+		}else if( parseModuleNameRlt ){
+			contents = contents
+				.replace( /define\([\w\W]*?return/, parseModuleNameRlt.name+"." + parseModuleNameRlt.attr + " =" )
+				.replace( rdefineEnd, "" );
 			
 		}else if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
 			// 定义全局方法
@@ -119,7 +150,7 @@ var cfg_default = {
 
 		} else if ( moduleName=="text" ) {
 			// 文本模块
-			// elog(moduleName);
+			// elog(contents);
 			contents = "";
 			
 		} else if ( /\.html$/.test(moduleName) || /.\/TPL\//.test( path.replace( process.cwd(), "" ) ) ) {
@@ -133,7 +164,6 @@ var cfg_default = {
 				clog('red',"请检查视图模板模块的路径> "+moduleName );
 			}
 			
-			
 		} else {
 			// elog(moduleName);
 			contents = contents
@@ -141,7 +171,6 @@ var cfg_default = {
 
 				// Multiple exports
 				.replace( /\s*exports\.\w+\s*=\s*\w+;/g, "" );
-			
 			
 			// Remove define wrappers, closure ends, and empty declarations
 			contents = contents
@@ -158,6 +187,7 @@ var cfg_default = {
 			// Remove empty definitions
 			contents = contents
 				.replace( /define\(\[[^\]]*\]\)[\W\n]+$/, "" );
+
 		}
 		
 		/*
@@ -181,6 +211,17 @@ var optimize = function(cfg,cb){
 	}
 	
 	var config = Object.assign({},cfg_default,cfg);
+	// elog(!!config.onBuildWriteAfter)
+	if(config.onBuildWriteAfter){
+		config.onBuildWrite = function(moduleName, path, contents){
+			var args = Array.prototype.slice.call(arguments,0) || [];
+			var t_cts = config._onBuildWrite.apply(this, args);
+			// elog(t_cts)
+			return config.onBuildWriteAfter(moduleName, path, t_cts);
+		}
+	}else{
+		config.onBuildWrite = config._onBuildWrite;
+	}
 	// elog(config)
 	requirejs.optimize(config, function (buildResponse) {
 		//buildResponse is just a text output of the modules
@@ -283,7 +324,7 @@ var matchRecord = function(path, runPack, cb){
 		if( pathStr === getPathStr(packOps.out) ){
 			// console.log('忽略该文件')
 			clog('yellow', `忽略输出路径：${packOps.out}` );
-			cb && cb(packName,packOps,true);
+			// cb && cb(packName,packOps,true);
 			lock_pack = false;
 			
 		}else{

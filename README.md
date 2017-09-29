@@ -21,8 +21,9 @@
 fn/name1 | function(){} | Fn.name = function(){}
 var/fn1 | function(){} | var fn1 = function(){}
 text!var/tpl/name2.html | html字符串... | var tpl_name2 = 'html字符串...'
-text!TPL/name3.html | html字符串... | TPL.name3 = 'html字符串...'
-TPL/name4 | function(){} | TPL.name4 = function(){}
+text!obj/name3.html | html字符串... | obj.name3 = 'html字符串...'
+obj/name4 | function(){} | obj.name4 = function(){}
+> 上方中的 obj 目录，需添加配置 objectModuleDir:["obj"]
 
 简要示例如下：
 
@@ -84,7 +85,12 @@ rjs_sugar.config({
         "name":"entry",
         "optimize":"none",
         // 自义定参数
-        "speedTaskEnter":0 // 任务进入执行队列中最小间隔时间 
+        "speedTaskEnter":0, // 任务进入执行队列中最小间隔时间 
+        "onBuildWriteAfter":function(moduleName, path, contents){
+        	// onBuildWrite 之后执行的回调 
+        	return contents;
+        },
+        "objectModuleDir":[] // 通过模块名称转化为对象的目录名称
     },
     "records":{
         "recordsName1":{
@@ -107,8 +113,9 @@ rjs_sugar.config({
 recordName | config设置的记录名称
 callback | 打包执行后的回调函数
 示例：
-
-	rjs_sugar.optimize("gf",cbfn);
+```
+rjs_sugar.optimize("gf",cbfn);
+```
 
 ### optimize(config, callback)
 通过传入配置参数执行打包
@@ -144,41 +151,35 @@ console.log( recordName ); // recordsName1
 ```
 
 ## ChangeLog
-### 0.1.3
+### 0.2.0
+- 新增自定义配置参数 onBuildWriteAfter、objectModuleDir
 
+### 0.1.3
 - fix matchRecord 回调执行的bug
 
 ### 0.1.2
-
 - 使用 uojo-kit 模块来替换 log，新增参数 speedTaskEnter
 - 互换 pack 与 optimize 的方法的使用
 
 ### 0.1.1
-
 - 修复回调执行
 - 将队列顺序执行更改为队列异步执行
 
 ### 0.0.7
-
 - 新增方法 matchRecord ，用于匹配记录
 
 ### 0.0.6
-
 - 修复当错误时不提示信息的问题
 
 ### 0.0.5
-
 - 修改 console.log 显示方式
 - 新增 require(TPL/xxx) 模板时，打包后的内容为 TPL.xxx = ...
 
 ### 0.0.4
-
 - 添加测试、使用实例
 - 新增 require(text!xxx...) 模板时，打包后的内容挂载方式
 
-
 ### 0.0.3
-
 - 添加打包成功后的消息输出
 
 

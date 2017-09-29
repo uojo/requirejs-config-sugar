@@ -297,7 +297,18 @@ define(['module'], function (module) {
                             errback(err);
                         }
                     } else {
-                        callback(xhr.responseText);
+                        console.log("hello-----------------",masterConfig.callbackBefore);
+												// 自定义参数
+												var resText = (function(ct){
+													var rlt;
+													if(masterConfig.callbackBefore){
+														rlt = masterConfig.callbackBefore(ct)
+													}
+													return rlt?rlt:ct;
+												})(xhr.responseText);
+												
+                        callback(resText);
+                        // callback(xhr.responseText);
                     }
 
                     if (masterConfig.onXhrComplete) {

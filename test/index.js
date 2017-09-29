@@ -1,10 +1,25 @@
 var Path = require('path');
+var {elog} = require('uojo-kit')
 var rjs_sugar = require('../index');
+var rjsConfigText = require("./require_cfg_text").config['text'];
+
 var rjs_ops = {
+	"debug":true,
 	"common":{
 		"name":"entry",
 		"optimize":"none",
-		"speedTaskEnter":200
+		"speedTaskEnter":200,
+		"mainConfigFile":"test/app/require_config.js",
+		"objectModuleDir":['obj'],
+		"onBuildWriteAfter":function(moduleName, path, contents){
+			// elog(moduleName, /^text!/.test(moduleName))
+			if( /^text!/.test(moduleName) ){
+				contents = rjsConfigText.callbackBefore(contents);
+				elog(contents)
+			}
+			
+			return contents;
+		}
 	},
 	"records":{
 		"app1":{

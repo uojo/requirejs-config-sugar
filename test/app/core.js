@@ -1,9 +1,9 @@
 define([], function() {
-	var Fn = {
+	var obj = {
 		fieldname1:1,
 		fieldname2:function(){
 			
 		}
 	};
-	return Fn;
+	return obj;
 });
