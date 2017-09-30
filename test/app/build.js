@@ -2,7 +2,7 @@
 //core 
  
 	var obj = {
-		fieldname1:1,
+		fieldname1:112,
 		fieldname2:function(){
 			
 		}
@@ -36,8 +36,8 @@
 
 //var/fn1 
  var fn1 = function () {
-        // console.debug();
-    };
+		// console.log();
+  };
 
  
 

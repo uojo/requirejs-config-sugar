@@ -1,6 +1,6 @@
 define([], function() {
 	var obj = {
-		fieldname1:1,
+		fieldname1:112,
 		fieldname2:function(){
 			
 		}

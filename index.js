@@ -20,87 +20,43 @@ function getPathStr(path){
 	return rlt;
 }
 
-function regTPLField(moduleName, contents ){
-	var name_var_arr = moduleName.match(/var\/([^\.]*)/),
-			name_arr, vname, vname_temp;
-	
-	// elog(moduleName);
-	
-	if( name_var_arr && name_var_arr[1] ){
-		vname_temp = name_var_arr[1]
-		
-		// elog(vname_temp)
-		
-	}else{
-	
-		if( /^text!/.test(moduleName) ){
-			vname_temp = /!([^\.]*)/.exec(moduleName)[1];
-		}else if( /TPL\//.test(moduleName) ){
-			vname_temp = /TPL\/([^\.]*)/.exec( moduleName )[1];
-		}
-		
-		// elog(vname_temp)
-		
-	}
-
-	// return false;
-	// elog(moduleName, "::", vname_temp);
-	
-	if( vname_temp ){
-		vname = vname_temp.replace(/\//g,"_");
-		
-		if( /TPL\//.test(moduleName) ){
-			
-			if( /^TPL_/.test(vname) ){
-				fname = vname.replace(/^TPL_/,"");
-			}else{
-				fname = vname_temp;
-			}
-			replaceBody = "TPL." + fname + " =";
-			
-		}else{
-			replaceBody = "var " + vname + " =";
-			
-		}
-		
-		contents = contents
-		.replace( /define\([\w\W]*?return/, replaceBody )
-		
-	}else{
-		
-		
-	}
-	
-	return contents;
-}
-
-function parseModuleName(dirs,moduleName){
-	elog(moduleName)
-	if(!dirs.length){
+function parseModuleName(options,moduleName){
+	elog(moduleName);
+	var varRules = options.varModuleDir, objRules = options.objectModuleDir;
+	if(!varRules.length && !objRules.length ){
 		return false;
 	}
 	
+	// 过滤掉插件、扩展名
 	moduleName = moduleName.replace(/^[^!]*!/,"").replace(/\.+.+$/,"");
-	if( /[^\w\d\/]+/.test(moduleName) || !/\//.test(moduleName) ){
+	
+	if( /[^\w\d_\/]+/.test(moduleName) || !/\//.test(moduleName) ){
 		return false;
 	}
 	
 	var ta = moduleName.split('/');
 	
-	if( !dirs.includes(ta[0]) ){
+	if( objRules.includes(ta[0]) ){
+		return ta[0]+"." + ta.slice(1).join('_') + " =";
+		
+	}else if( varRules.includes(ta[0]) ){
+		if(ta[0]==='var'){
+			return ta[0]+" " + ta.slice(1).join('_') + " =";
+		}else{
+			return "var "+ moduleName.replace(/\//g,"_") + " =";
+		}
+		
 		return null;
 	}
-		
-	return {
-		name:ta[0],
-		attr:ta.slice(1).join('_')
-	}
+	
+	return null;
 }
 
 var cfg_default = {
 	//自定义参数，官方没有--start
 	speedTaskEnter:0, 
 	processSkipModules:[],
+	varModuleDir:['var'],
 	objectModuleDir:[],
 	//--end
 	
@@ -124,47 +80,22 @@ var cfg_default = {
 		var amdName,
 			rdefineEnd = /\}\s*?\);[^}\w]*$/;
 		
-		var parseModuleNameRlt = parseModuleName(this.objectModuleDir,moduleName)
+		var parseModuleNameRlt = parseModuleName(this,moduleName)
 		elog(parseModuleNameRlt)
 		
 		if( this.processSkipModules.includes(moduleName) ){
 			
 		}else if( parseModuleNameRlt ){
 			contents = contents
-				.replace( /define\([\w\W]*?return/, parseModuleNameRlt.name+"." + parseModuleNameRlt.attr + " =" )
+				.replace( /define\([\w\W]*?return/, parseModuleNameRlt )
 				.replace( rdefineEnd, "" );
 			
-		}else if ( /.\/var\//.test( path.replace( process.cwd(), "" ) ) ) {
-			// 定义全局方法
-			// elog(moduleName);
-			contents = contents
-				.replace( /define\([\w\W]*?return/, "var " + ( /var\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
-				.replace( rdefineEnd, "" );
-
-		} else if ( /.\/fn\//.test( path.replace( process.cwd(), "" ) ) ) {
-			// 定义全局方法
-			// elog(moduleName);
-			contents = contents
-				.replace( /define\([\w\W]*?return/, "Fn." + ( /fn\/([\w-]+)/.exec( moduleName )[ 1 ] ) + " =" )
-				.replace( rdefineEnd, "" );
-
-		} else if ( moduleName=="text" ) {
+		}else if ( moduleName=="text" ) {
 			// 文本模块
 			// elog(contents);
 			contents = "";
 			
-		} else if ( /\.html$/.test(moduleName) || /.\/TPL\//.test( path.replace( process.cwd(), "" ) ) ) {
-			// 视图模板
-			
-			contents = regTPLField( moduleName, contents );
-			
-			if( contents!=false ){
-				contents = contents.replace( rdefineEnd, "" );
-			}else{
-				clog('red',"请检查视图模板模块的路径> "+moduleName );
-			}
-			
-		} else {
+		}	else {
 			// elog(moduleName);
 			contents = contents
 				.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
@@ -205,6 +136,7 @@ var cfg_default = {
 };
 
 var optimize = function(cfg,cb){
+	elog(cb)
 	// elog(cfg)
 	if(cfg.constructor != Object){
 		clog('red',`打包配置错误：${cfg}`)
@@ -235,7 +167,7 @@ var optimize = function(cfg,cb){
 		clog('green', "created", buildResponse.split('\n')[1] );
 		lock_pack=false;
 		if(cb){
-			console.log("执行打包回调")
+			clog("green", "执行打包回调")
 			cb();
 		}
 		
@@ -291,6 +223,7 @@ var matchRecord = function(path, runPack, cb){
 	var packName, packOps,
 			pathDirStr = getPathStr( Path.dirname(path) ),
 			pathStr = getPathStr(path);
+	// elog( cb );
 	// elog( path );
 	// elog( pathDirStr );
 	// elog( pathStr );
@@ -300,7 +233,6 @@ var matchRecord = function(path, runPack, cb){
 		var item = ops_records[k1],
 			item_path = getPathStr(item.baseUrl);
 			repx1 = new RegExp( item_path );
-		
 		// elog( item_path, repx1.test( pathStr ), pathDirStr, k1 );
 		
 		if( repx1.test( pathDirStr ) ){
@@ -324,7 +256,7 @@ var matchRecord = function(path, runPack, cb){
 		if( pathStr === getPathStr(packOps.out) ){
 			// console.log('忽略该文件')
 			clog('yellow', `忽略输出路径：${packOps.out}` );
-			// cb && cb(packName,packOps,true);
+			cb && cb(packName,packOps,true);
 			lock_pack = false;
 			
 		}else{

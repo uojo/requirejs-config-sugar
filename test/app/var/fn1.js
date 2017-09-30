@@ -1,7 +1,7 @@
 define([], function() {
 
 	return function () {
-        // console.debug();
-    };
+		// console.log();
+  };
 
 });

@@ -1,10 +1,10 @@
 {
   "name": "requirejs-config-sugar",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "简化 requirejs 的配置",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env LOG_LEVEL=debug nodemon test/index.js",
+    "start": "cross-env LOG_ENV=debug nodemon test/index.js",
     "watch": "node test/index.js -w all",
     "build": "node test/index.js -c all",
     "stress": "node test/stress.js"
@@ -32,6 +32,6 @@
   "peerDependencies": {},
   "dependencies": {
     "requirejs": "2.3.2",
-    "uojo-kit": "0.2.0"
+    "uojo-kit": "0.3.0"
   }
 }

@@ -18,12 +18,22 @@
 
 模块名称 | 模块内容 | 编译结果
 :---|:---|:---
-fn/name1 | function(){} | Fn.name = function(){}
+tpl/name1 | function(){} | var tpl_name1 = function(){}
 var/fn1 | function(){} | var fn1 = function(){}
 text!var/tpl/name2.html | html字符串... | var tpl_name2 = 'html字符串...'
 text!obj/name3.html | html字符串... | obj.name3 = 'html字符串...'
 obj/name4 | function(){} | obj.name4 = function(){}
-> 上方中的 obj 目录，需添加配置 objectModuleDir:["obj"]
+上方中实现的提前配置如下：
+
+```
+{common:{
+    objectModuleDir:["obj"],
+    varModuleDir:["var","tpl"],
+    ...
+},...}
+```
+
+> 的 obj 目录，需添加配置 objectModuleDir:["obj"]
 
 简要示例如下：
 
@@ -90,7 +100,8 @@ rjs_sugar.config({
         	// onBuildWrite 之后执行的回调 
         	return contents;
         },
-        "objectModuleDir":[] // 通过模块名称转化为对象的目录名称
+        "varModuleDir":['var'] // 通过模块名称转化为定义语法，例：var xxx = ...
+        "objectModuleDir":[] // 通过模块名称转化为对象注册属性语法，例：Obj.attr = ...
     },
     "records":{
         "recordsName1":{
@@ -151,8 +162,13 @@ console.log( recordName ); // recordsName1
 ```
 
 ## ChangeLog
-### 0.2.0
+### 0.3.0
+- 新增自定义配置参数 varModuleDir
+- 重写内部模块解析，放弃原先内置对模板名称中 TPL、Fn 的解析。之前版本可通过配置 varModuleDir、objectModuleDir 来升级
+
+### 0.2.0 
 - 新增自定义配置参数 onBuildWriteAfter、objectModuleDir
+- 提示：可能不兼容之前的版本
 
 ### 0.1.3
 - fix matchRecord 回调执行的bug
