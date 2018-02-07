@@ -9,7 +9,7 @@ var rjs_ops = {
 		"name":"entry",
 		"optimize":"none",
 		"speedTaskEnter":200,
-		"mainConfigFile":"test/app/require_config.js",
+		"mainConfigFile":"test/require_config.js",
 		"objectModuleDir":['obj'],
 		"onBuildWriteAfter":function(moduleName, path, contents){
 			// elog(moduleName, /^text!/.test(moduleName))
@@ -23,8 +23,18 @@ var rjs_ops = {
 	},
 	"records":{
 		"app1":{
-			"baseUrl": Path.resolve(__dirname,'app'),
-			"out": Path.resolve(__dirname,'app/build.js'),
+			"baseUrl": Path.resolve(__dirname,'app1'),
+			"out": Path.resolve(__dirname,'app1/build.js'),
+			"paths":{
+				"text": "lib/text",
+				// "views": "../views"
+			}
+		},
+		"app2":{
+			// "wrapShim": true,
+			findNestedDependencies: true,
+			"baseUrl": Path.resolve(__dirname,'app2'),
+			"out": Path.resolve(__dirname,'app2/build.js'),
 			"paths":{
 				"text": "lib/text",
 				// "views": "../views"
@@ -61,7 +71,7 @@ if( program.watch ){
 	var cbfn_onchange = (event, path) => {
 		
 		if( event === "change"){
-			console.log(event, path );
+			elog(event, path );
 			// 自动匹配配置的记录，自动执行压缩
 			rjs_sugar.matchRecord(path,true)
 			

@@ -56,12 +56,12 @@
 ;
 //text!obj/name3.html 
  
-obj.name3 = '<div class="">\r\n\t<b>hello world</b>\r\n\t<img onerror="GPP.assetsOnload(this,\'error\')" src="<%=GPP.getAssetsPath((\'abc.jpg\'))%>" />\r\n</div>'; 
+obj.name3 = '<div class="">\n\t<b>hello world</b>\n\t<img onerror="GPP.assetsOnload(this,\'error\')" src="<%=GPP.getAssetsPath((\'abc.jpg\'))%>" />\n</div>'; 
 
 
 //text!var/tpl/name2.html 
  
-var tpl_name2 = '<div class="">\r\n\t<b>hello world</b>\r\n</div>'; 
+var tpl_name2 = '<div class="">\n\t<b>hello world</b>\n</div>'; 
 
 
 //entry 
