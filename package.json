@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/uojo/requirejs-config-sugar/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/uojo/requirejs-config-sugar",
   "devDependencies": {
     "commander": "2.9.0",
     "cross-env": "5.0.5",
