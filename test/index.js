@@ -22,17 +22,16 @@ var rjs_ops = {
 		}
 	},
 	"records":{
-		"app1":{
+		/* "app1":{
 			"baseUrl": Path.resolve(__dirname,'app1'),
 			"out": Path.resolve(__dirname,'app1/build.js'),
 			"paths":{
 				"text": "lib/text",
 				// "views": "../views"
 			}
-		},
+		}, */
 		"app2":{
-			// "wrapShim": true,
-			findNestedDependencies: true,
+			"findNestedDependencies": true,
 			"baseUrl": Path.resolve(__dirname,'app2'),
 			"out": Path.resolve(__dirname,'app2/build.js'),
 			"paths":{

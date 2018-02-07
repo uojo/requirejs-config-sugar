@@ -162,6 +162,9 @@ console.log( recordName ); // recordsName1
 ```
 
 ## ChangeLog
+### 0.4.0
+- 对rjs参数 findNestedDependencies 的支持
+
 ### 0.3.0
 - 新增自定义配置参数 varModuleDir
 - 重写内部模块解析，放弃原先内置对模板名称中 TPL、Fn 的解析。之前版本可通过配置 varModuleDir、objectModuleDir 来升级

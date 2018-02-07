@@ -1,12 +1,12 @@
 {
   "name": "requirejs-config-sugar",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "简化 requirejs 的配置",
   "main": "index.js",
   "scripts": {
     "start": "cross-env LOG_ENV=debug nodemon test/index.js",
     "watch": "node test/index.js -w all",
-    "build": "node test/index.js -c all",
+    "build": "cross-env LOG_ENV=debug node test/index.js -c all",
     "stress": "node test/stress.js"
   },
   "repository": {

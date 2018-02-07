@@ -4,6 +4,8 @@ const Path = require("path");
 // var fs = require('fs');
 
 var lock_pack = false, fireWall, debug;
+var rdefineEnd = /\}\s*?\);[^}\w]*$/;
+
 var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
@@ -20,8 +22,8 @@ function getPathStr(path){
 	return rlt;
 }
 
-function parseModuleName(options,moduleName){
-	elog(moduleName);
+function parseModuleName(moduleName,options){
+	// elog(moduleName);
 	var varRules = options.varModuleDir, objRules = options.objectModuleDir;
 	if(!varRules.length && !objRules.length ){
 		return false;
@@ -52,14 +54,56 @@ function parseModuleName(options,moduleName){
 	return null;
 }
 
+function parseModuleContent(contents,options,wrapName) {
+	wrapName = wrapName || "define"
+	contents = contents
+	.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
+	// Multiple exports
+	.replace( /\s*exports\.\w+\s*=\s*\w+;/g, "" );
+	
+	// Remove define wrappers, closure ends, and empty declarations
+	var reg_wrap = new RegExp(wrapName+"\\([^{]*?{");
+	contents = contents
+	.replace( reg_wrap, "" )
+	.replace( rdefineEnd, "" )
+	
+	// Remove anything wrapped with
+	// /* ExcludeStart */ /* ExcludeEnd */
+	// or a single line directly after a // BuildExclude comment
+	contents = contents
+	.replace( /\/\*\s*ExcludeStart\s*\*\/[\w\W]*?\/\*\s*ExcludeEnd\s*\*\//ig, "" )
+	.replace( /\/\/\s*BuildExclude\n\r?[\w\W]*?\n\r?/ig, "" );
+	
+	// Remove empty definitions
+	var reg_empty = new RegExp(wrapName+"\\(\\[[^\\]]*\\]\\)[\\W\\n]+$");
+	contents = contents
+	.replace( reg_empty, "" );
+
+	// elog(contents);
+	// if has require([...],function(){});
+	if(options.findNestedDependencies){
+		var matchReq = /require\([^{]*?{/.test(contents)
+		elog(matchReq)
+		if(matchReq){
+			return parseModuleContent(contents,options,"require")
+		}else{
+			return contents;
+		}
+	}else{
+		return contents
+	}
+
+}
+
 var cfg_default = {
 	//自定义参数，官方没有--start
 	speedTaskEnter:0, 
 	processSkipModules:[],
 	varModuleDir:['var'],
 	objectModuleDir:[],
+
 	//--end
-	
+	"findNestedDependencies": false,
 	name: 'entry',
 	// optimize:"none",
 	async:true,
@@ -73,19 +117,19 @@ var cfg_default = {
 		end: "}());"
 	},
 	_onBuildWrite:function(moduleName, path, contents, options){
-		debug && clog('red',moduleName, path);
+		debug && clog('gray',moduleName, path);
 		// elog(process);
 		// elog(this.out)
 		// return contents;
-		var amdName,
-			rdefineEnd = /\}\s*?\);[^}\w]*$/;
+		var amdName;
 		
-		var parseModuleNameRlt = parseModuleName(this,moduleName)
-		elog(parseModuleNameRlt)
+		var parseModuleNameRlt = parseModuleName(moduleName,this)
+		elog(moduleName, parseModuleNameRlt)
 		
 		if( this.processSkipModules.includes(moduleName) ){
 			
 		}else if( parseModuleNameRlt ){
+			// 将模块名称进行解析
 			contents = contents
 				.replace( /define\([\w\W]*?return/, parseModuleNameRlt )
 				.replace( rdefineEnd, "" );
@@ -96,29 +140,8 @@ var cfg_default = {
 			contents = "";
 			
 		}	else {
-			// elog(moduleName);
-			contents = contents
-				.replace( /\s*return\s+[^\}]+(\}\s*?\);[^\w\}]*)$/, "$1" )
-
-				// Multiple exports
-				.replace( /\s*exports\.\w+\s*=\s*\w+;/g, "" );
-			
-			// Remove define wrappers, closure ends, and empty declarations
-			contents = contents
-				.replace( /define\([^{]*?{/, "" )
-				.replace( rdefineEnd, "" );
-			
-			// Remove anything wrapped with
-			// /* ExcludeStart */ /* ExcludeEnd */
-			// or a single line directly after a // BuildExclude comment
-			contents = contents
-				.replace( /\/\*\s*ExcludeStart\s*\*\/[\w\W]*?\/\*\s*ExcludeEnd\s*\*\//ig, "" )
-				.replace( /\/\/\s*BuildExclude\n\r?[\w\W]*?\n\r?/ig, "" );
-
-			// Remove empty definitions
-			contents = contents
-				.replace( /define\(\[[^\]]*\]\)[\W\n]+$/, "" );
-
+			contents = parseModuleContent(contents,this);
+			// elog(contents);
 		}
 		
 		/*
@@ -128,8 +151,7 @@ var cfg_default = {
 		}
 		*/
 		
-		contents = `//${moduleName} \n ${contents} \n\n`
-		// elog(contents);
+		contents = `//${moduleName} \n ${contents} \n\n`;
 		
 		return contents;
 	}
