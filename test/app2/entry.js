@@ -4,10 +4,10 @@ define(function(require){
 		"core",
 		// "mods/umd",
 		"umd",
-		"var/fn1",
-		"obj/name1",
-		"text!obj/name3.html",
-		"text!var/tpl/name2.html",
+		"./var/fn1",
+		"./obj/name1",
+		"text!./obj/name3.html",
+		"text!./var/tpl/name2.html",
 		
 	], function(Fn) {
 		
