@@ -1,4 +1,22 @@
 ;(function() {
+//fn3 
+ 
+
+	return function () {
+		// console.log();
+  };
+
+ 
+
+
+//dir1/fn5 
+ var dir1_fn5 = function () {
+		// console.log();
+  };
+
+ 
+
+
 //var/fn2 
  var fn2 = function () {
 		// console.log();
@@ -17,7 +35,32 @@
 	}; 
 
 
-//umd 
+//mods/umd2 
+ (function (root, factory) {
+	// console.log( typeof define === 'function', typeof exports ==='object', root,factory)
+	if (typeof define === 'function' && define.amd) {
+		// AMD
+		
+		// Node, CommonJS-like
+		module.exports = factory();
+	} else {
+		// Browser globals (root is window)
+		root.sysRoutes = factory(root);
+	}
+}(this, function (Win) {
+	// methods
+	var data = {
+		a:110
+	};
+	
+	// console.log(window)
+	// exposed public method
+	return data;
+}));
+ 
+
+
+//umd1 
  (function (root, factory) {
 	// console.log( typeof define === 'function', typeof exports ==='object', root,factory)
 	if (typeof define === 'function' && define.amd) {
@@ -73,7 +116,8 @@ var tpl_name2 = '<div class="">\n\t<b>hello world</b>\n</div>';
 
 
 //entry 
- /* 该模块仅用于打包，非引用模块（不能直接 
+ 
+	
 		
 		/* 
 		变量名称与路径对应：var/tpl/pagebean.html  ===> tpl_pagebean
@@ -81,6 +125,11 @@ var tpl_name2 = '<div class="">\n\t<b>hello world</b>\n</div>';
 		*/
 		Fn.xxx2 = tpl_name2;
 		
+		Fn.fn3 =fn3;
+		Fn.fn3 =dir1_fn5;
+		// Fn.fn2 =fn2;
+		// Fn.fn4 = require("var/sub/fn4");
+
 		// 全局命名空间
 		var spaceName="TPL";
 		// console.log("main.complete");

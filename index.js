@@ -10,6 +10,11 @@ var ops_records={
 	// "name1":{requirejsConfig...},"name2":{requirejsConfig...}
 };
 
+var modNameAlias = {
+	// "var/fn2" : "fn2",
+	// "var/sub/fn4" : "sub_fn2",
+}
+
 // 注意：baseUrl 路径是基于执行 node的目录的
 function getPathStr(path){
 	let rlt=''
@@ -23,7 +28,9 @@ function getPathStr(path){
 }
 
 function parseModuleName(moduleName,options){
-	// elog(moduleName);
+	elog(moduleName);
+	modNameAlias[moduleName] = moduleName.replace(/\//g,"_");
+
 	var varRules = options.varModuleDir, objRules = options.objectModuleDir;
 	if(!varRules.length && !objRules.length ){
 		return false;
@@ -42,13 +49,23 @@ function parseModuleName(moduleName,options){
 		return ta[0]+"." + ta.slice(1).join('_') + " =";
 		
 	}else if( varRules.includes(ta[0]) ){
+		var rlt, alias;
 		if(ta[0]==='var'){
-			return ta[0]+" " + ta.slice(1).join('_') + " =";
+			alias = ta.slice(1).join('_');
+			rlt = ta[0]+" " + alias + " =";
 		}else{
-			return "var "+ moduleName.replace(/\//g,"_") + " =";
+			alias = moduleName.replace(/\//g,"_")
+			rlt = "var "+ alias + " =";
 		}
 		
+		if(rlt){
+			modNameAlias[moduleName] = alias;
+			return rlt;
+		}
 		return null;
+
+	}else{
+
 	}
 	
 	return null;
@@ -78,13 +95,29 @@ function parseModuleContent(contents,options,wrapName) {
 	var reg_empty = new RegExp(wrapName+"\\(\\[[^\\]]*\\]\\)[\\W\\n]+$");
 	contents = contents
 	.replace( reg_empty, "" );
+	
+	// replace ＝> require();
+	var reg_req = /=\s*(require\(['"]+([^'"]*)['"]+\))/g;
+	var matchReqMod = contents.match(reg_req);
+	contents = contents.replace(reg_req,function(a,b,c,d){
+		var f1 = c.replace(/\./g,"").replace(/^\//g,"");
+		var alias1=modNameAlias[f1]
+		// elog(a,b,c)
+		elog(f1,alias1)
+		if(alias1){
+			return "="+alias1;
+		}
+		return a;
+	})
+	elog(matchReqMod);
 
 	// elog(contents);
 	// if has require([...],function(){});
 	if(options.findNestedDependencies){
-		var matchReq = /require\([^{]*?{/.test(contents)
-		elog(matchReq)
-		if(matchReq){
+		var matchReq = /^\s*require\([^{]*?{/.test(contents)
+			if(matchReq){
+				clog('red',contents)
+
 			return parseModuleContent(contents,options,"require")
 		}else{
 			return contents;
@@ -124,7 +157,7 @@ var cfg_default = {
 		var amdName;
 		
 		var parseModuleNameRlt = parseModuleName(moduleName,this)
-		elog(moduleName, parseModuleNameRlt)
+		// elog(moduleName, parseModuleNameRlt)
 		
 		if( this.processSkipModules.includes(moduleName) ){
 			
@@ -140,6 +173,7 @@ var cfg_default = {
 			contents = "";
 			
 		}	else {
+			// elog(contents);
 			contents = parseModuleContent(contents,this);
 			// elog(contents);
 		}

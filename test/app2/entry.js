@@ -1,9 +1,8 @@
-/* 该模块仅用于打包，非引用模块（不能直接 require(['entry'])），仅使用打包后的文件 */
 define(function(require){
 	require([
 		"core",
-		// "mods/umd",
-		"umd",
+		"mods/umd2",
+		"umd1",
 		"./var/fn1",
 		"./obj/name1",
 		"text!./obj/name3.html",
@@ -17,6 +16,11 @@ define(function(require){
 		*/
 		Fn.xxx2 = tpl_name2;
 		
+		Fn.fn3 = require("./fn3");
+		Fn.fn3 = require("./dir1/fn5");
+		// Fn.fn2 = require("./var/fn2");
+		// Fn.fn4 = require("var/sub/fn4");
+
 		// 全局命名空间
 		var spaceName="TPL";
 		// console.log("main.complete");
