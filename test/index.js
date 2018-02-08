@@ -4,7 +4,7 @@ var rjs_sugar = require('../index');
 var rjsConfigText = require("./require_cfg_text").config['text'];
 
 var rjs_ops = {
-	"debug":true,
+	"debug":false,
 	"common":{
 		"name":"entry",
 		"optimize":"none",
@@ -16,7 +16,7 @@ var rjs_ops = {
 			// elog(moduleName, /^text!/.test(moduleName))
 			if( /^text!/.test(moduleName) ){
 				contents = rjsConfigText.callbackBefore(contents);
-				elog(contents)
+				// elog(contents)
 			}
 			
 			return contents;

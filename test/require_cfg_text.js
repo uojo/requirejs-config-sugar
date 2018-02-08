@@ -19,7 +19,7 @@
 			'text': {
 				// 自定义参数回调
 				callbackBefore: function(resText){
-					console.log('------------------------------',resText)
+					// console.log('------------------------------',resText)
 					var rlt='';
 					
 					// 对img标签加工，追加获取绝对路径的方法
@@ -70,7 +70,7 @@
 								d = d.replace(/<img\s/g,"<img "+patchInline.join(" ")+" ");
 							}
 							
-							console.log(d)
+							// console.log(d)
 						}
 						
 						return d;

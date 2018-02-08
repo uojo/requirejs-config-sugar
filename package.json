@@ -1,6 +1,6 @@
 {
   "name": "requirejs-config-sugar",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "简化 requirejs 的配置",
   "main": "index.js",
   "scripts": {

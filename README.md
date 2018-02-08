@@ -162,20 +162,18 @@ console.log( recordName ); // recordsName1
 ```
 
 ## ChangeLog
+### 0.5.0
+- 对 xxx = require(...) 的支持
 ### 0.4.0
 - 对rjs参数 findNestedDependencies 的支持
-
 ### 0.3.0
 - 新增自定义配置参数 varModuleDir
 - 重写内部模块解析，放弃原先内置对模板名称中 TPL、Fn 的解析。之前版本可通过配置 varModuleDir、objectModuleDir 来升级
-
 ### 0.2.0 
 - 新增自定义配置参数 onBuildWriteAfter、objectModuleDir
 - 提示：可能不兼容之前的版本
-
 ### 0.1.3
 - fix matchRecord 回调执行的bug
-
 ### 0.1.2
 - 使用 uojo-kit 模块来替换 log，新增参数 speedTaskEnter
 - 互换 pack 与 optimize 的方法的使用
