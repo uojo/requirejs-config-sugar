@@ -1,4 +1,5 @@
 var Path = require('path');
+var commander = require('commander');
 var {elog} = require('uojo-kit')
 var rjs_sugar = require('../index');
 var rjsConfigText = require("./require_cfg_text").config['text'];
@@ -46,8 +47,7 @@ var rjs_ops = {
 rjs_sugar.config( rjs_ops );
 
 // 配置cli
-var program = require('commander');
-program
+commander
 .option('-c, --create [name]', '打包模块', "")
 .option('-w, --watch [name]', '监听目录变动并自动打包', "")
 .parse(process.argv);
@@ -65,8 +65,8 @@ const handle= {
 }
 
 // 监听目录变动自动打包
-// console.log("program.watch", program.watch);
-if( program.watch ){
+// console.log("commander.watch", commander.watch);
+if( commander.watch ){
 	var chokidar = require('chokidar');
 	var cbfn_onchange = (event, path) => {
 		
@@ -87,13 +87,13 @@ if( program.watch ){
 }
 
 // 兼容终端执行（直接执行）
-// console.log("program.create", program.create);
-if(program.create){
-	if( program.create=="all" ){
+// console.log("commander.create", commander.create);
+if(commander.create){
+	if( commander.create=="all" ){
 		handle.vendorAll();
 		
 	}else{
-		handle.vendor(program.create);
+		handle.vendor(commander.create);
 	}
 	
 }
