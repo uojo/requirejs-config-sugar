@@ -27,9 +27,9 @@ obj/name4 | function(){} | obj.name4 = function(){}
 
 ```
 {common:{
-    objectModuleDir:["obj"],
-    varModuleDir:["var","tpl"],
-    ...
+  objectModuleDir:["obj"],
+  varModuleDir:["var","tpl"],
+  ...
 },...}
 ```
 
@@ -47,30 +47,29 @@ define([
 "text!TPL/name3.html",
 "TPL/name4",
 ], function(Fn) {
-    Fn.xxx2 = tpl_name2;
-    
-    // 全局命名空间
-    var spaceName="TPL";
-    // console.log("main.complete");
-    if( window[spaceName] ){
-    	$.extend(window[spaceName],Fn);
-    }else{
-    	window[spaceName] = Fn;
-    }
-    
-    return Fn;
-
+  Fn.xxx2 = tpl_name2;
+  
+  // 全局命名空间
+  var spaceName="TPL";
+  // console.log("main.complete");
+  if( window[spaceName] ){
+    $.extend(window[spaceName],Fn);
+  }else{
+    window[spaceName] = Fn;
+  }
+  
+  return Fn;
 });
 
 // core.js
 define([], function() {
-    var Fn = {
-    	fieldname1:1,
-    	fieldname2:function(){
-        
-    	}
-    };
-    return Fn;
+  var Fn = {
+    fieldname1:1,
+    fieldname2:function(){
+      
+    }
+  };
+  return Fn;
 });
 
 ```
@@ -91,28 +90,28 @@ define([], function() {
 
 ```
 rjs_sugar.config({
-    "common":{
-        "name":"entry",
-        "optimize":"none",
-        // 自义定参数
-        "speedTaskEnter":0, // 任务进入执行队列中最小间隔时间 
-        "onBuildWriteAfter":function(moduleName, path, contents){
-        	// onBuildWrite 之后执行的回调 
-        	return contents;
-        },
-        "varModuleDir":['var'] // 通过模块名称转化为定义语法，例：var xxx = ...
-        "objectModuleDir":[] // 通过模块名称转化为对象注册属性语法，例：Obj.attr = ...
+  "common":{
+    "name":"entry",
+    "optimize":"none",
+    // 自义定参数
+    "speedTaskEnter":0, // 任务进入执行队列中最小间隔时间 
+    "onBuildWriteAfter":function(moduleName, path, contents){
+      // onBuildWrite 之后执行的回调 
+      return contents;
     },
-    "records":{
-        "recordsName1":{
-            "baseUrl": 'dirname1/',
-            "out": 'build/file1_build.js'
-        },
-        "recordsName2":{
-            "baseUrl": 'dirname2/',
-            "out": 'build/file2_build.js'
-        },
-    }
+    "varModuleDir":['var'] // 通过模块名称转化为定义语法，例：var xxx = ...
+    "objectModuleDir":[] // 通过模块名称转化为对象注册属性语法，例：Obj.attr = ...
+  },
+  "records":{
+    "recordsName1":{
+      "baseUrl": 'dirname1/',
+      "out": 'build/file1_build.js'
+    },
+    "recordsName2":{
+      "baseUrl": 'dirname2/',
+      "out": 'build/file2_build.js'
+    },
+  }
 });
 ```
 
@@ -120,9 +119,10 @@ rjs_sugar.config({
 通过配置记录执行打包
 
 参数 | 作用
-:---|:---
-recordName | config设置的记录名称
-callback | 打包执行后的回调函数
+|:---|:---
+|recordName | config设置的记录名称
+|callback | 打包执行后的回调函数
+
 示例：
 ```
 rjs_sugar.optimize("gf",cbfn);
@@ -130,33 +130,35 @@ rjs_sugar.optimize("gf",cbfn);
 
 ### optimize(config, callback)
 通过传入配置参数执行打包
-参数 | 作用
-:---|:---
-config | requirejs 打包配置，请 [参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js)
-callback | 打包执行后的回调函数
+|参数 | 作用
+|:---|:---
+|config | requirejs 打包配置，请 [参考](https://github.com/requirejs/r.js/blob/master/build/example.build.js)
+|callback | 打包执行后的回调函数
+
 示例：
 ```
 rjs_sugar.optimize({
-    name: 'entry',
-    out: 'build.js'
+  name: 'entry',
+  out: 'build.js'
 },cbfn);
 ```
 
 ### matchRecord( path, runPack, callback)
 通过传入文件的绝对路径，获取匹配的配置记录。且可立即执行打包。
-参数 | 作用 | 默认值
-:---|:---|:---
-path | 文件的绝对路径，建议使用 path.resolve() | 
-runPack | 立即执行打包 | false
-callback | 打包执行后的回调函数 | 
+
+|参数 | 作用 | 默认值
+|:---|:---|:---
+|path | 文件的绝对路径，建议使用 path.resolve() | ""
+|runPack | 立即执行打包 | false
+|callback | 打包执行后的回调函数 | 
 
 返回：匹配记录的名称
 
 示例：
 ```
 var recordName = rjs_sugar.matchRecord( path.resolve('./dirname1/xxx.js'), true, function(name,options){
-    console.log(name); // recordsName1
-    console.log(options); // { "baseUrl":'dirname1/', "out":'build/file1_build.js' }
+  console.log(name); // recordsName1
+  console.log(options); // { "baseUrl":'dirname1/', "out":'build/file1_build.js' }
 } );
 console.log( recordName ); // recordsName1
 ```
