@@ -15,10 +15,8 @@
   },
   "keywords": [
     "requirejs",
-    "rjs",
-    "uojo"
+    "rjs"
   ],
-  "author": "uojonet@163.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/uojo/requirejs-config-sugar/issues"
